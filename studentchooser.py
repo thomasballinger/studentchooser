@@ -1,11 +1,6 @@
 from random import random
 
-students = ["ali", "ben", "chuck", "dave", "erin"]
-class_size = len(students)
 prob_change = 0.05
-# to-do: populate from list 'students'
-roster = {"ali": 1, "ben": 1, "chuck": 1, "dave": 1, "erin": 1}
-
 def pick_kid():
 	value = random()
 	startpoint = 0
@@ -24,8 +19,6 @@ def pick_kid():
 		else:
 			startpoint += roster[kid]
 
-	#print value
-	#print roster
 	return chosen
 
 
@@ -35,13 +28,12 @@ def scale():
 		roster[kid] *= 1.0 / total
 
 def select():
-	#print roster
 	the_student = pick_kid()
 	scale()
+	print the_student
 	return the_student
 
-scale()
-
+# TESTING FUNCTIONS
 def test_always(kid):
 	for i in range(0,10000):
 		the_student = select()
@@ -53,14 +45,23 @@ def test_never(kid):
 	for i in range(0,10000):
 		the_student = select()
 		print i
-		#print "--------"
 		if the_student == kid:
 			print "PANIC!"
 			break
 
 def multi_test(x):
 	for i in range(0,x):
-		print select()
+		print "%d: %s" % (i, select())
+
+students = ["ali", "ben", "chuck", "dave", "erin", "samer", "eric", "merlin", "arthur"]
+#roster = {"ali": 1, "ben": 1, "chuck": 1, "dave": 1, "erin": 1}
+roster = {}
+
+for kid in students:
+	roster[kid] = 1
+
+scale()
+print roster
 
 
 
@@ -71,3 +72,4 @@ def multi_test(x):
 # some way to check if student is absent
 
 # notification of who is absent
+
