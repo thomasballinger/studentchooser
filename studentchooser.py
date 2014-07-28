@@ -11,11 +11,11 @@ students = []
 
 ### CLASSES ###
 class Student(object):
-	def __init__(self, name):
+	def __init__(self, name, prob=1, picked=0, absent=False):
 		self.name = name
-		self.prob = 1
-		self.picked = 0
-		self.absent = False
+		self.prob = prob
+		self.picked = picked
+		self.absent = absent
 	def __repr__(self):
 		return "%s; %f; %d; %d" % (self.name, self.prob, self.picked, self.absent)
 	def __str__(self):
@@ -47,7 +47,6 @@ def pick_kid():
 		#print "(%f, %f)" % (startpoint, endpoint)
 		if (startpoint <= value <= endpoint):
 			chosen = kid
-			get_present_students()[kid].picked += 1
 			break
 		else:
 			startpoint += get_present_students()[kid].prob
@@ -82,8 +81,18 @@ def mark_absent(abs_list):
 				print "ERRROR! One or more of your names was not recognized. Please try again.\n"
 				take_attendance()
 
-def select():
-	the_student = pick_kid()
+def select():	
+	while True:
+		the_student = pick_kid()
+
+		confirmation = confirm(the_student + " was selected. OK? y/n")
+
+		if confirmation:
+			get_present_students()[the_student].picked += 1
+			break
+		elif not(confirmation):
+			print "OK, choosing again."
+
 	scale()
 	print the_student
 	print roster
@@ -178,15 +187,11 @@ def populate_roster():
 		picked = int(this_line[2])
 		absent = bool(int(this_line[3]))
 		print "name = %r; prob = %r; picked = %r; absent = %r" % (name, prob, picked, absent)
-		roster[name] = Student(name)
-		roster[name].name = name
-		roster[name].prob = prob
-		roster[name].picked = picked
-		roster[name].absent = absent
+		roster[name] = Student(name, prob, picked, absent)
 
 def last_absent():
 	absent_list = []
-	
+
 	for kid in roster:
 		if roster[kid].absent:
 			absent_list.append(kid)
@@ -224,8 +229,6 @@ def multi_test(x):
 		print "%d: %s" % (i, select())
 		#print roster
 		#print "-----------"
-
-# make a debug function that will display all of the probabilities?
 
 ### ACTION STARTS HERE ###
 print "Hello, and welcome to the Student Picker 5000!"
