@@ -8,6 +8,7 @@ default_confirm_msg = "Is this correct? y/n"
 data_file = "data.txt"
 roster = {}
 present_students = {}
+students = []
 
 ### CLASSES ###
 class Student(object):
@@ -47,6 +48,10 @@ def pick_kid():
 		#print "(%f, %f)" % (startpoint, endpoint)
 		if (startpoint <= value <= endpoint):
 			chosen = kid
+			
+			confirmation = confirm(kid + " was selected. OK? y/n")
+
+			#MORE HERE!
 			present_students[kid].picked += 1
 			break
 		else:
@@ -65,6 +70,8 @@ def scale():
 			total += present_students[kid].prob
 	for kid in present_students:
 			present_students[kid].prob *= 100.0 / total
+
+#TESTING
 
 def get_present_students():
 	present_kids = {}
@@ -115,7 +122,6 @@ def new_student_list():
 		confirmation = confirm()
 		
 		if confirmation:
-			# if user confirms, set specified students to "absent"
 			return students
 		elif not(confirmation):
 			# if user does not confirm, ask again
@@ -125,12 +131,12 @@ def new_student_list():
 			# students = ["ali", "ben", "chuck", "dave"]
 			#, "erin", "samer", "eric", "merlin", "arthur", "rachel", "carlos", "sindhu"]
 
-def make_roster(list):
+def make_roster(student_list):
 	# make an empty dict.
 	roster = {}
 
 	# populate that dict. with all students equally weighted
-	for kid in list:
+	for kid in student_list:
 		roster[kid] = Student(kid)
 
 	return roster
@@ -177,6 +183,7 @@ def take_attendance():
 
 		# update list of present students for use in selection
 		present_students = get_present_students()
+
 	elif not(confirmation):
 		# if user does not confirm, ask again
 		take_attendance()
@@ -221,28 +228,17 @@ while True:
 	answer = ask()
 
 	if answer == "1":
-		students = new_student_list()
-		roster = {}
-
-		# populate that dict. with all students equally weighted
-		for kid in students:
-			roster[kid] = Student(kid)
-
-		print roster
-		print present_students
+		roster = make_roster(new_student_list())
 		
+		#print "get present"
 		# make a list of present students
-		get_present_students()
+		#present_students = get_present_students()
 
-		print roster
-		print present_students
 
+		#print "scale"
 		# scale probabilities
-		scale()
+		#scale()
 
-		print roster
-		print present_students
-		
 		break
 
 	elif answer == "2":
