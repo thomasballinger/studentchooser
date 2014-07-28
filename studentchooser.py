@@ -19,7 +19,11 @@ class Student(object):
 	def __repr__(self):
 		return "%s; %f; %d; %d" % (self.name, self.prob, self.picked, self.absent)
 	def __str__(self):
-		return "<%s; %f; %d; %d>" % (self.name, self.prob, self.picked, self.absent)
+		#return "<%s; %f; %d; %d>" % (self.name, self.prob, self.picked, self.absent)
+		return "%s: chosen %d times" % (self.name, self.picked)
+	def pretty_print(self):
+		return "%s: chosen %d times" % (self.name, self.picked)
+		
 
 ### UTILITY FUNCTIONS ###
 def ask():
@@ -121,6 +125,7 @@ def new_student_list():
 		confirmation = confirm()
 		
 		if confirmation:
+			students.sort()
 			return students
 		elif not(confirmation):
 			# if user does not confirm, ask again
@@ -144,8 +149,7 @@ def take_attendance():
 	print "\tAbraham \n\tBeelzebub \n\tCain"
 	print "Remember, you must input your students' names exactly as the appear on the roster."
 	print "As a reminder, your roster is:"
-	# to-do: do this from students list so that it can be alphabetical
-	for kid in roster:
+	for kid in students:
 		print "\t", kid
 	print "When you're done (or if no one is absent), just press 'RETURN'"
 
@@ -188,6 +192,15 @@ def populate_roster():
 		absent = bool(int(this_line[3]))
 		print "name = %r; prob = %r; picked = %r; absent = %r" % (name, prob, picked, absent)
 		roster[name] = Student(name, prob, picked, absent)
+
+	# populate list of student names and sort alphabetically
+	for kid in roster:
+		students.append(kid)
+	students.sort()
+
+def display_roster():
+	for kid in students:
+		print "\t", roster[kid]
 
 def last_absent():
 	absent_list = []
@@ -233,7 +246,7 @@ def multi_test(x):
 ### ACTION STARTS HERE ###
 print "Hello, and welcome to the Student Picker 5000!"
 
-# ask for user input
+# ask for user input: new roster, or import from file?
 while True:
 	print "1. make new roster, 2. use existing roster"
 	answer = ask()
@@ -255,12 +268,17 @@ while True:
 scale()
 
 # for debugging
-print "Roster:", roster
-print "Present:", get_present_students()
+# print "Roster:", roster
+# print "Present:", get_present_students()
+
+# take attendance
+# print "Who is absent today?"
+# take_attendance()
+# scale()
 
 # ask for user input
 while True:
-	print "1. pick, 2. input absences, 3. exit"
+	print "1. pick, 2. input absences, 3. view roster, 4. exit"
 	answer = ask()
 	if answer == "1":
 		select()
@@ -268,6 +286,8 @@ while True:
 		take_attendance()
 		scale()
 	elif answer == "3":
+		display_roster()
+	elif answer == "4":
 		save_data()
 		exit()
 	else:
