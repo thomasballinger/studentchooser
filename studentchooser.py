@@ -7,7 +7,6 @@ prob_change = 3.0/4.0
 default_confirm_msg = "Is this correct? y/n"
 data_file = "data.txt"
 roster = {}
-present_students = {}
 students = []
 
 ### CLASSES ###
@@ -43,19 +42,15 @@ def pick_kid():
 	startpoint = 0
 	endpoint = 0
 	
-	for kid in present_students:
-		endpoint += present_students[kid].prob
+	for kid in get_present_students():
+		endpoint += get_present_students()[kid].prob
 		#print "(%f, %f)" % (startpoint, endpoint)
 		if (startpoint <= value <= endpoint):
 			chosen = kid
-			
-			confirmation = confirm(kid + " was selected. OK? y/n")
-
-			#MORE HERE!
-			present_students[kid].picked += 1
+			get_present_students()[kid].picked += 1
 			break
 		else:
-			startpoint += present_students[kid].prob
+			startpoint += get_present_students()[kid].prob
 
 	return chosen
 
@@ -66,12 +61,10 @@ def scale():
 
 	# for all kids who are present, adjust prob. by # of times picked, then scale
 	total = 0
-	for kid in present_students:
-			total += present_students[kid].prob
-	for kid in present_students:
-			present_students[kid].prob *= 100.0 / total
-
-#TESTING
+	for kid in get_present_students():
+			total += get_present_students()[kid].prob
+	for kid in get_present_students():
+			get_present_students()[kid].prob *= 100.0 / total
 
 def get_present_students():
 	present_kids = {}
@@ -104,8 +97,6 @@ def new_student_list():
 		print "Remember, you must input your students' names exactly as the appear on the roster."
 		print "When you're done, just press 'RETURN'"
 
-		students = []
-
 		while True:	
 			answer = ask()
 			if answer != "":
@@ -117,7 +108,6 @@ def new_student_list():
 		# show the user-entered list, ask for confirmation
 		print "You provided the following list of students:"
 		print "\t", student_string
-		print students
 
 		confirmation = confirm()
 		
@@ -127,21 +117,13 @@ def new_student_list():
 			# if user does not confirm, ask again
 			new_student_list()
 
-			# list of students (later, will get this from user input)
-			# students = ["ali", "ben", "chuck", "dave"]
-			#, "erin", "samer", "eric", "merlin", "arthur", "rachel", "carlos", "sindhu"]
-
 def make_roster(student_list):
-	# make an empty dict.
-	roster = {}
+	# just in case there's anything in the roster, clear it
+	roster.clear()
 
 	# populate that dict. with all students equally weighted
 	for kid in student_list:
 		roster[kid] = Student(kid)
-
-	return roster
-
-		
 
 def take_attendance():
 	# reset all students to "present"
@@ -180,13 +162,39 @@ def take_attendance():
 	if confirmation:
 		# if user confirms, set specified students to "absent"
 		mark_absent(absent_list)
-
-		# update list of present students for use in selection
-		present_students = get_present_students()
-
 	elif not(confirmation):
 		# if user does not confirm, ask again
 		take_attendance()
+
+def populate_roster():
+	roster.clear()
+
+	roster_info = open(data_file)
+
+	for line in roster_info:
+		this_line = line.split("; ")
+		name = this_line[0]
+		prob = float(this_line[1])
+		picked = int(this_line[2])
+		absent = bool(int(this_line[3]))
+		print "name = %r; prob = %r; picked = %r; absent = %r" % (name, prob, picked, absent)
+		roster[name] = Student(name)
+		roster[name].name = name
+		roster[name].prob = prob
+		roster[name].picked = picked
+		roster[name].absent = absent
+
+def last_absent():
+	absent_list = []
+	
+	for kid in roster:
+		if roster[kid].absent:
+			absent_list.append(kid)
+			
+	absent_string = "; ".join(absent_list)
+
+	print "Students absent last time:"
+	print "\t", absent_string
 
 def save_data():
 	roster_info = open(data_file, "w")
@@ -228,61 +236,24 @@ while True:
 	answer = ask()
 
 	if answer == "1":
-		roster = make_roster(new_student_list())
-		
-		#print "get present"
-		# make a list of present students
-		#present_students = get_present_students()
-
-
-		#print "scale"
-		# scale probabilities
-		#scale()
-
+		make_roster(new_student_list())
 		break
 
 	elif answer == "2":
-		roster_info = open(data_file)
+		populate_roster()
 
-		roster = {}
-		present_students = {}
-
-		for line in roster_info:
-			this_line = line.split("; ")
-			name = this_line[0]
-			prob = float(this_line[1])
-			picked = int(this_line[2])
-			absent = bool(int(this_line[3]))
-			print "name = %r; prob = %r; picked = %r; absent = %r" % (name, prob, picked, absent)
-			roster[name] = Student(name)
-			roster[name].name = name
-			roster[name].prob = prob
-			roster[name].picked = picked
-			roster[name].absent = absent
-
-		absent_list = []
-		for kid in roster:
-			if roster[kid].absent:
-				absent_list.append(kid)
-				
-		absent_string = "; ".join(absent_list)
-
-		print "Students absent last time:"
-		print "\t", absent_string
+		last_absent()
 
 		break
 	else:
 		print "Sorry, I didn't get that. Try again."
-
-# make a list of students who are present
-present_students = get_present_students()
 
 # scale the probabilities of the present students
 scale()
 
 # for debugging
 print "Roster:", roster
-print "Present:", present_students
+print "Present:", get_present_students()
 
 # ask for user input
 while True:
@@ -292,9 +263,7 @@ while True:
 		select()
 	elif answer == "2":
 		take_attendance()
-		present_students = get_present_students()
 		scale()
-		print present_students
 	elif answer == "3":
 		save_data()
 		exit()
