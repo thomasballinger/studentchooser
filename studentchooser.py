@@ -4,26 +4,30 @@ from sys import exit
 ### CONSTANTS ###
 # change this value to adjust by how much a student's prob changes when picked
 prob_change = 3.0/4.0
+default_confirm_msg = "Is this correct? y/n"
+data_file = "data.txt"
+roster = {}
+present_students = {}
 
 ### CLASSES ###
 class Student(object):
 	def __init__(self, name):
 		self.name = name
-		self.absent = False
 		self.prob = 1
 		self.picked = 0
+		self.absent = False
 	def __repr__(self):
-		return "<%s, %f, picked = %f, absent = %d>" % (self.name, self.prob, self.picked, self.absent)
+		return "%s; %f; %d; %d" % (self.name, self.prob, self.picked, self.absent)
 	def __str__(self):
-		return "<%s, %f, picked = %f, absent = %d>" % (self.name, self.prob, self.picked, self.absent)
+		return "<%s; %f; %d; %d>" % (self.name, self.prob, self.picked, self.absent)
 
 ### UTILITY FUNCTIONS ###
 def ask():
 	return raw_input("> ")
 
-def confirm():
+def confirm(msg=default_confirm_msg):
 	while True:
-		print "Is this correct? y/n"
+		print msg
 		answer = ask()
 		if answer == "y" or answer == "Y" or answer == "yes" or answer == "Yes" or answer == "YES":
 			return True
@@ -54,7 +58,7 @@ def scale():
 	# set all prob's back to scale to 100
 	for kid in roster:
 		roster[kid].prob = 100 * prob_change ** (roster[kid].picked)
-		# print roster[kid].name, roster[kid].prob
+
 	# for all kids who are present, adjust prob. by # of times picked, then scale
 	total = 0
 	for kid in present_students:
@@ -86,6 +90,53 @@ def select():
 	print "----------"
 	return the_student
 
+def new_student_list():
+		# ask user to input students' names
+		print "Input students one at a time, hitting RETURN after each. For example:"
+		print "\tAbraham \n\tBeelzebub \n\tCain"
+		print "Remember, you must input your students' names exactly as the appear on the roster."
+		print "When you're done, just press 'RETURN'"
+
+		students = []
+
+		while True:	
+			answer = ask()
+			if answer != "":
+				students.append(answer)
+			else:
+				break
+
+		student_string = "; ".join(students)
+		# show the user-entered list, ask for confirmation
+		print "You provided the following list of students:"
+		print "\t", student_string
+		print students
+
+		confirmation = confirm()
+		
+		if confirmation:
+			# if user confirms, set specified students to "absent"
+			return students
+		elif not(confirmation):
+			# if user does not confirm, ask again
+			new_student_list()
+
+			# list of students (later, will get this from user input)
+			# students = ["ali", "ben", "chuck", "dave"]
+			#, "erin", "samer", "eric", "merlin", "arthur", "rachel", "carlos", "sindhu"]
+
+def make_roster(list):
+	# make an empty dict.
+	roster = {}
+
+	# populate that dict. with all students equally weighted
+	for kid in list:
+		roster[kid] = Student(kid)
+
+	return roster
+
+		
+
 def take_attendance():
 	# reset all students to "present"
 	for kid in roster:
@@ -96,9 +147,10 @@ def take_attendance():
 	print "\tAbraham \n\tBeelzebub \n\tCain"
 	print "Remember, you must input your students' names exactly as the appear on the roster."
 	print "As a reminder, your roster is:"
+	# to-do: do this from students list so that it can be alphabetical
 	for kid in roster:
 		print "\t", kid
-	print "If no one is absent, just press 'RETURN'"
+	print "When you're done (or if no one is absent), just press 'RETURN'"
 
 	absent_list = []
 
@@ -129,6 +181,12 @@ def take_attendance():
 		# if user does not confirm, ask again
 		take_attendance()
 
+def save_data():
+	roster_info = open(data_file, "w")
+	for kid in roster:
+		roster_info.write(repr(roster[kid]))
+		roster_info.write("\n")
+	roster_info.close
 
 ### TROUBLESHOOTING/TESTING FUNCTIONS ###
 def test_always(kid):
@@ -155,18 +213,70 @@ def multi_test(x):
 # make a debug function that will display all of the probabilities?
 
 ### ACTION STARTS HERE ###
-# list of students (later, will get this from user input)
-students = ["ali", "ben", "chuck", "dave"]
-#, "erin", "samer", "eric", "merlin", "arthur", "rachel", "carlos", "sindhu"]
+print "Hello, and welcome to the Student Picker 5000!"
 
-# make an empty dict.
-roster = {}
-present_students = {}
+# ask for user input
+while True:
+	print "1. make new roster, 2. use existing roster"
+	answer = ask()
 
-# populate that dict. with all students equally weighted
-# --> ONLY FOR FIRST CREATION OF THE LIST! OTHERWISE, WILL GET VALUES FROM TEXT FILE!
-for kid in students:
-	roster[kid] = Student(kid)
+	if answer == "1":
+		students = new_student_list()
+		roster = {}
+
+		# populate that dict. with all students equally weighted
+		for kid in students:
+			roster[kid] = Student(kid)
+
+		print roster
+		print present_students
+		
+		# make a list of present students
+		get_present_students()
+
+		print roster
+		print present_students
+
+		# scale probabilities
+		scale()
+
+		print roster
+		print present_students
+		
+		break
+
+	elif answer == "2":
+		roster_info = open(data_file)
+
+		roster = {}
+		present_students = {}
+
+		for line in roster_info:
+			this_line = line.split("; ")
+			name = this_line[0]
+			prob = float(this_line[1])
+			picked = int(this_line[2])
+			absent = bool(int(this_line[3]))
+			print "name = %r; prob = %r; picked = %r; absent = %r" % (name, prob, picked, absent)
+			roster[name] = Student(name)
+			roster[name].name = name
+			roster[name].prob = prob
+			roster[name].picked = picked
+			roster[name].absent = absent
+
+		absent_list = []
+		for kid in roster:
+			if roster[kid].absent:
+				absent_list.append(kid)
+				
+		absent_string = "; ".join(absent_list)
+
+		print "Students absent last time:"
+		print "\t", absent_string
+
+		break
+	else:
+		print "Sorry, I didn't get that. Try again."
 
 # make a list of students who are present
 present_students = get_present_students()
@@ -178,36 +288,22 @@ scale()
 print "Roster:", roster
 print "Present:", present_students
 
-print "Hello, and welcome to the Student Picker 5000!"
-
-absent_list = []
-for kid in roster:
-	if roster[kid].absent:
-		absent_list.append(kid)
-		
-absent_string = "; ".join(absent_list)
-
-print "Students absent last time:"
-print "\t", absent_string
-
 # ask for user input
 while True:
 	print "1. pick, 2. input absences, 3. exit"
 	answer = ask()
 	if answer == "1":
-		#select()
-		test_never("ben")
+		select()
 	elif answer == "2":
 		take_attendance()
 		present_students = get_present_students()
 		scale()
 		print present_students
 	elif answer == "3":
+		save_data()
 		exit()
 	else:
 		print "Sorry, I didn't get that. Try again."	
 
 
 # some way to save the state
-
-# notification of who is absent
