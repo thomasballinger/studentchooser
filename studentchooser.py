@@ -21,7 +21,12 @@ class Student(object):
 		return "<%s; %f; %d; %d>" % (self.name, self.prob, self.picked, self.absent)
 	def __str__(self):
 		# for user output
-		return "%s: chosen %d times (absent = %s)" % (self.name, self.picked, self.absent)
+		reg_output = "%s: chosen %d times" % (self.name, self.picked)
+		absence_output = " (absent)"
+		if self.absent:
+			return reg_output + absence_output
+		else:
+			return reg_output
 	def to_file(self):
 		# for file storage
 		return "%s; %f; %d; %d" % (self.name, self.prob, self.picked, self.absent)
@@ -105,7 +110,8 @@ def select():
 	print "----------"
 	return the_student
 
-def new_student_list(target_list=students):
+# TODO opt argument for existing list
+def new_student_list():
 		# ask user to input students' names
 		print "Input students one at a time, hitting RETURN after each. For example:"
 		print "\tAbraham \n\tBeelzebub \n\tCain"
@@ -129,18 +135,20 @@ def new_student_list(target_list=students):
 		confirmation = confirm()
 		
 		if confirmation:
-			target_list = target_list + temp_students_list
-
-			target_list.sort()
-			return target_list
+			temp_students_list.sort()
+			return temp_students_list
 		elif not(confirmation):
-			# if user does not confirm, ask again
-			new_student_list()
+			# if user does not confirm, ask again for input
+			return new_student_list()
 
-def make_roster(input_list=students):
+def update_roster(input_list):
 	# populate the roster with the contents of the list of students
 	for kid in input_list:
-		roster[kid] = Student(kid)
+		if roster.get(kid):
+			# if student is already in the roster, don't add a duplicate, print an error instead
+			print "ERROR: '%s' is already in your roster." % kid
+		else:
+			roster[kid] = Student(kid)
 
 def take_attendance():
 	# reset all students to "present"
@@ -183,6 +191,9 @@ def take_attendance():
 		take_attendance()
 
 def update_student_list():
+	# clear student list
+	del students[:]
+
 	# populate list of student names and sort alphabetically
 	for kid in roster:
 		students.append(kid)
@@ -199,7 +210,7 @@ def populate_roster():
 		prob = float(this_line[1])
 		picked = int(this_line[2])
 		absent = bool(int(this_line[3]))
-		print "name = %r; prob = %r; picked = %r; absent = %r" % (name, prob, picked, absent)
+		#print "name = %r; prob = %r; picked = %r; absent = %r" % (name, prob, picked, absent)
 		roster[name] = Student(name, prob, picked, absent)
 
 	update_student_list()
@@ -258,16 +269,16 @@ while True:
 	answer = ask()
 
 	if answer == "1":
-		#make_roster(new_student_list())
-		print new_student_list()
-		print students
-		make_roster
-		print roster
+		students = new_student_list()
+		update_roster(students)
+		print "student list:", students
+		print "roster", roster
 		break
 
 	elif answer == "2":
 		populate_roster()
 
+		print "Roster loaded!"
 		last_absent()
 
 		break
@@ -298,7 +309,12 @@ while True:
 	elif answer == "3":
 		display_roster()
 	elif answer == "4":
-		make_roster(new_student_list())
+		new_students = new_student_list()
+		print "new students", new_students
+		update_roster(new_students)
+		update_student_list()
+		print "student list:", students
+		print "roster", roster
 	elif answer == "5":
 		save_data()
 		exit()
