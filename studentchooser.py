@@ -17,12 +17,14 @@ class Student(object):
 		self.picked = picked
 		self.absent = absent
 	def __repr__(self):
-		return "%s; %f; %d; %d" % (self.name, self.prob, self.picked, self.absent)
+		# for debug
+		return "<%s; %f; %d; %d>" % (self.name, self.prob, self.picked, self.absent)
 	def __str__(self):
-		#return "<%s; %f; %d; %d>" % (self.name, self.prob, self.picked, self.absent)
+		# for user output
 		return "%s: chosen %d times (absent = %s)" % (self.name, self.picked, self.absent)
-	def pretty_print(self):
-		return "%s: chosen %d times" % (self.name, self.picked)
+	def to_file(self):
+		# for file storage
+		return "%s; %f; %d; %d" % (self.name, self.prob, self.picked, self.absent)
 		
 
 ### UTILITY FUNCTIONS ###
@@ -221,7 +223,7 @@ def last_absent():
 def save_data():
 	roster_info = open(data_file, "w")
 	for kid in roster:
-		roster_info.write(repr(roster[kid]))
+		roster_info.write(roster[kid].to_file())
 		roster_info.write("\n")
 	roster_info.close
 
