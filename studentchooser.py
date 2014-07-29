@@ -20,7 +20,7 @@ class Student(object):
 		return "%s; %f; %d; %d" % (self.name, self.prob, self.picked, self.absent)
 	def __str__(self):
 		#return "<%s; %f; %d; %d>" % (self.name, self.prob, self.picked, self.absent)
-		return "%s: chosen %d times" % (self.name, self.picked)
+		return "%s: chosen %d times (absent = %s)" % (self.name, self.picked, self.absent)
 	def pretty_print(self):
 		return "%s: chosen %d times" % (self.name, self.picked)
 		
@@ -103,21 +103,23 @@ def select():
 	print "----------"
 	return the_student
 
-def new_student_list():
+def new_student_list(target_list=students):
 		# ask user to input students' names
 		print "Input students one at a time, hitting RETURN after each. For example:"
 		print "\tAbraham \n\tBeelzebub \n\tCain"
 		print "Remember, you must input your students' names exactly as the appear on the roster."
 		print "When you're done, just press 'RETURN'"
 
+		temp_students_list = []
+
 		while True:	
 			answer = ask()
 			if answer != "":
-				students.append(answer)
+				temp_students_list.append(answer)
 			else:
 				break
 
-		student_string = "; ".join(students)
+		student_string = "; ".join(temp_students_list)
 		# show the user-entered list, ask for confirmation
 		print "You provided the following list of students:"
 		print "\t", student_string
@@ -125,18 +127,17 @@ def new_student_list():
 		confirmation = confirm()
 		
 		if confirmation:
-			students.sort()
-			return students
+			target_list = target_list + temp_students_list
+
+			target_list.sort()
+			return target_list
 		elif not(confirmation):
 			# if user does not confirm, ask again
 			new_student_list()
 
-def make_roster(student_list):
-	# just in case there's anything in the roster, clear it
-	roster.clear()
-
-	# populate that dict. with all students equally weighted
-	for kid in student_list:
+def make_roster(input_list=students):
+	# populate the roster with the contents of the list of students
+	for kid in input_list:
 		roster[kid] = Student(kid)
 
 def take_attendance():
@@ -179,6 +180,12 @@ def take_attendance():
 		# if user does not confirm, ask again
 		take_attendance()
 
+def update_student_list():
+	# populate list of student names and sort alphabetically
+	for kid in roster:
+		students.append(kid)
+	students.sort()
+
 def populate_roster():
 	roster.clear()
 
@@ -193,10 +200,7 @@ def populate_roster():
 		print "name = %r; prob = %r; picked = %r; absent = %r" % (name, prob, picked, absent)
 		roster[name] = Student(name, prob, picked, absent)
 
-	# populate list of student names and sort alphabetically
-	for kid in roster:
-		students.append(kid)
-	students.sort()
+	update_student_list()
 
 def display_roster():
 	for kid in students:
@@ -252,7 +256,11 @@ while True:
 	answer = ask()
 
 	if answer == "1":
-		make_roster(new_student_list())
+		#make_roster(new_student_list())
+		print new_student_list()
+		print students
+		make_roster
+		print roster
 		break
 
 	elif answer == "2":
@@ -278,7 +286,7 @@ scale()
 
 # ask for user input
 while True:
-	print "1. pick, 2. input absences, 3. view roster, 4. exit"
+	print "1. pick, 2. input absences, 3. view roster, 4. add student(s), 5. exit"
 	answer = ask()
 	if answer == "1":
 		select()
@@ -288,6 +296,8 @@ while True:
 	elif answer == "3":
 		display_roster()
 	elif answer == "4":
+		make_roster(new_student_list())
+	elif answer == "5":
 		save_data()
 		exit()
 	else:
