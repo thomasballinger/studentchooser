@@ -5,7 +5,7 @@ from sys import exit
 # change this value to adjust by how much a student's prob changes when picked
 prob_change = 3.0/4.0
 default_confirm_msg = "Is this correct? y/n"
-data_file = "data.txt"
+config_file = "config.txt"
 roster = {}
 students = []
 
@@ -199,7 +199,7 @@ def update_student_list():
 		students.append(kid)
 	students.sort()
 
-def populate_roster():
+def populate_roster(data_file):
 	roster.clear()
 
 	roster_info = open(data_file)
@@ -226,17 +226,36 @@ def last_absent():
 		if roster[kid].absent:
 			absent_list.append(kid)
 			
+	absent_list.sort()			
 	absent_string = "; ".join(absent_list)
 
 	print "Students absent last time:"
 	print "\t", absent_string
 
+def get_all_rosters():
+	all_rosters_file = open(config_file)	
+	all_rosters_list = []
+	for line in all_rosters_file:
+		all_rosters_list.append(line.strip())
+	all_rosters_list.sort()
+	return all_rosters_list
+
 def save_data():
-	roster_info = open(data_file, "w")
+	roster_info = open(current_file, "w")
 	for kid in roster:
 		roster_info.write(roster[kid].to_file())
 		roster_info.write("\n")
 	roster_info.close
+
+	if new_roster:
+		roster_list = get_all_rosters()
+		roster_list.append(current_file)
+		roster_list.sort()
+		all_rosters_file = open(config_file, "w")
+
+		for file_name in roster_list:
+			all_rosters_file.write(file_name)
+			all_rosters_file.write("\n")
 
 ### TROUBLESHOOTING/TESTING FUNCTIONS ###
 def test_always(kid):
@@ -269,16 +288,52 @@ while True:
 	answer = ask()
 
 	if answer == "1":
+		# name the text file in which this roster will be stored
+		print "Enter a name for this class. (Avoid spaces.)"
+		print "(For example, you could call it 'period1' or 'pd_1', but probably not 'period 1'.)"
+		class_title = ask()
+		current_file = class_title + ".txt"
+		# when the program quits, it will know to add a new filename to the "config file"
+		new_roster = True
+
+		# ask the user for student names, and then make a roster from them
 		students = new_student_list()
 		update_roster(students)
-		print "student list:", students
-		print "roster", roster
+		# print "student list:", students
+		# print "roster", roster
 		break
 
 	elif answer == "2":
-		populate_roster()
+		new_roster = False
+		print "Which roster would you like to load?"
+		roster_list = get_all_rosters()
+		print "roster list:", roster_list
+		print "length =", len(roster_list)
+		for item in roster_list:
+			item_index = roster_list.index(item) + 1
+			txt_index = item.find(".txt")
+			readable_name = item[:txt_index]
+			print "%d. %s" % (item_index, readable_name)
 
-		print "Roster loaded!"
+		while True:
+
+			answer = ask()
+
+			try:
+			  answer_int = int(answer)
+			except ValueError:
+			  answer_int = None
+
+			if answer_int in range(1, len(roster_list) + 1):
+				index = answer_int - 1
+				file_to_load = roster_list[index]
+				current_file = file_to_load
+				print "File to load:", file_to_load
+				populate_roster(file_to_load)
+				break
+			else:
+				print "Sorry, I didn't get that. Try again."
+
 		last_absent()
 
 		break
