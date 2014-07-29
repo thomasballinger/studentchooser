@@ -8,6 +8,7 @@ default_confirm_msg = "Is this correct? y/n"
 config_file = "config.txt"
 roster = {}
 students = []
+new_roster = True
 
 ### CLASSES ###
 class Student(object):
@@ -110,7 +111,6 @@ def select():
 	print "----------"
 	return the_student
 
-# TODO opt argument for existing list
 def new_student_list():
 		# ask user to input students' names
 		print "Input students one at a time, hitting RETURN after each. For example:"
@@ -126,6 +126,9 @@ def new_student_list():
 				temp_students_list.append(answer)
 			else:
 				break
+
+		# removing duplicates
+		temp_students_list = list(set(temp_students_list))
 
 		student_string = "; ".join(temp_students_list)
 		# show the user-entered list, ask for confirmation
@@ -149,6 +152,55 @@ def update_roster(input_list):
 			print "ERROR: '%s' is already in your roster." % kid
 		else:
 			roster[kid] = Student(kid)
+
+def new_roster():
+	# name the text file in which this roster will be stored
+	print "Enter a name for this class. (Avoid spaces.)"
+	print "(For example, you could call it 'period1' or 'pd_1', but probably not 'period 1'.)"
+	class_title = ask()
+	current_file = class_title + ".txt"
+	# when the program quits, it will know to add a new filename to the "config file"
+	global new_roster
+	new_roster = True
+
+	# ask the user for student names, and then make a roster from them
+	students = new_student_list()
+	update_roster(students)
+
+def load_roster():
+	global new_roster
+	new_roster = False
+	
+	print "Which roster would you like to load?"
+	roster_list = get_all_rosters()
+
+	for item in roster_list:
+		item_index = roster_list.index(item) + 1
+		txt_index = item.find(".txt")
+		readable_name = item[:txt_index]
+		print "\t%d. %s" % (item_index, readable_name)
+
+	while True:
+
+		answer = ask()
+
+		try:
+		  answer_int = int(answer)
+		except ValueError:
+		  answer_int = None
+
+		if answer_int in range(1, len(roster_list) + 1):
+			index = answer_int - 1
+			file_to_load = roster_list[index]
+			global current_file
+			current_file = file_to_load
+			print "File to load:", file_to_load
+			populate_roster(file_to_load)
+			break
+		else:
+			print "Sorry, I didn't get that. Try again."
+
+	last_absent()
 
 def take_attendance():
 	# reset all students to "present"
@@ -247,6 +299,8 @@ def save_data():
 		roster_info.write("\n")
 	roster_info.close
 
+	global new_roster
+
 	if new_roster:
 		roster_list = get_all_rosters()
 		roster_list.append(current_file)
@@ -284,73 +338,29 @@ print "Hello, and welcome to the Student Picker 5000!"
 
 # ask for user input: new roster, or import from file?
 while True:
-	print "1. make new roster, 2. use existing roster"
+	print "1. make new roster, 2. load existing roster"
 	answer = ask()
 
 	if answer == "1":
-		# name the text file in which this roster will be stored
-		print "Enter a name for this class. (Avoid spaces.)"
-		print "(For example, you could call it 'period1' or 'pd_1', but probably not 'period 1'.)"
-		class_title = ask()
-		current_file = class_title + ".txt"
-		# when the program quits, it will know to add a new filename to the "config file"
-		new_roster = True
-
-		# ask the user for student names, and then make a roster from them
-		students = new_student_list()
-		update_roster(students)
-		# print "student list:", students
-		# print "roster", roster
+		new_roster()
 		break
 
 	elif answer == "2":
-		new_roster = False
-		print "Which roster would you like to load?"
-		roster_list = get_all_rosters()
-		print "roster list:", roster_list
-		print "length =", len(roster_list)
-		for item in roster_list:
-			item_index = roster_list.index(item) + 1
-			txt_index = item.find(".txt")
-			readable_name = item[:txt_index]
-			print "%d. %s" % (item_index, readable_name)
-
-		while True:
-
-			answer = ask()
-
-			try:
-			  answer_int = int(answer)
-			except ValueError:
-			  answer_int = None
-
-			if answer_int in range(1, len(roster_list) + 1):
-				index = answer_int - 1
-				file_to_load = roster_list[index]
-				current_file = file_to_load
-				print "File to load:", file_to_load
-				populate_roster(file_to_load)
-				break
-			else:
-				print "Sorry, I didn't get that. Try again."
-
-		last_absent()
-
+		load_roster()
 		break
+
 	else:
 		print "Sorry, I didn't get that. Try again."
 
 # scale the probabilities of the present students
+update_student_list()
+
+answer = confirm("Take attendance now? y/n")
+if answer:
+	print "Who is absent today?"
+	take_attendance()
+
 scale()
-
-# for debugging
-# print "Roster:", roster
-# print "Present:", get_present_students()
-
-# take attendance
-# print "Who is absent today?"
-# take_attendance()
-# scale()
 
 # ask for user input
 while True:
@@ -362,6 +372,7 @@ while True:
 		take_attendance()
 		scale()
 	elif answer == "3":
+		print students
 		display_roster()
 	elif answer == "4":
 		new_students = new_student_list()
@@ -375,6 +386,3 @@ while True:
 		exit()
 	else:
 		print "Sorry, I didn't get that. Try again."	
-
-
-# some way to save the state
