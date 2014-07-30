@@ -2,7 +2,7 @@ from random import random
 from sys import exit
 import string
 
-### CONSTANTS ###
+### CONSTANTS & GLOBALS ###
 
 # default text in "confirm" function
 default_confirm_msg = "Is this correct? y/n"
@@ -45,12 +45,12 @@ class Student(object):
 
 ### USER INPUT FUNCTIONS ###
 
-# ask for user input
 def ask():
+	"""Return user input."""
 	return raw_input("> ")
 
-# converts user input into True or False
 def confirm(msg=default_confirm_msg):
+	""""Convert user input into True or False, return a Boolean."""
 	while True:
 		print msg
 		answer = ask()
@@ -63,16 +63,17 @@ def confirm(msg=default_confirm_msg):
 
 ### HELPER FUNCTIONS ###
 
-# returns a list of present students
 def get_present_students():
+	"""Return a list of present students."""
 	present_kids = {}
 	for kid in roster:
 		if not(roster[kid].absent):
 			present_kids[kid] = roster[kid]
 	return present_kids
 
-# repopulates and alphabetizes student list
+
 def update_student_list():
+	"""Repopulate and alphabetize student list."""
 	# clear student list
 	del students[:]
 
@@ -81,19 +82,19 @@ def update_student_list():
 		students.append(kid)
 	students.sort(key=string.lower)
 
-# prints contents of roster in user-friendly format
 def display_roster():
+	"""Prints contents of roster in user-friendly format."""
 	print "Current roster:", current_roster_name
 	for kid in students:
 		print "\t", roster[kid]
 
-# for "myfile.txt", returns "myfile"
 def get_pretty_name(filename):
+	"""Returns \"myfile\" for input \"myfile.txt\"."""
 	extension_index = filename.find(".txt")
 	return filename[:extension_index]
 
-# returns a list of all of the roster filenames in the config file
 def get_all_rosters():
+	""""Return a list of all of the roster filenames in the config file."""
 	all_rosters_file = open(config_file)	
 	all_rosters_list = []
 	for line in all_rosters_file:
@@ -106,50 +107,8 @@ def get_all_rosters():
 
 ### ATTENDANCE ###
 
-# asks user to input absent students, passes these students to mark_absent()
-	# to change their status to "absent"
-def take_attendance():
-	# reset all students to "present"
-	for kid in roster:
-		roster[kid].absent = False
-
-	# ask user to input absent students
-	print "Input absent students one at a time, hitting RETURN after each. For example:"
-	print "\tAbraham \n\tBeelzebub \n\tCain"
-	print "Remember, you must input your students' names exactly as the appear on the roster."
-	print "As a reminder, your roster is:"
-	for kid in students:
-		print "\t", kid
-	print "When you're done (or if no one is absent), just press 'RETURN'"
-
-	absent_list = []
-
-	while True:	
-		answer = ask()
-		if answer != "": # if answer is not a blank line
-			if roster.get(answer): # if answer is in the roster (i.e. valid student name)
-				absent_list.append(answer) # add to absent list
-			else:
-				print "Not a vaild student name, please try again."
-		else: # if the user enters a blank line, end the loop
-			break
-
-	# show the user-entered list, ask for confirmation
-	print "You said the following students are absent:"
-	absent_string = "; ".join(absent_list)
-	print "\t", absent_string
-
-	confirmation = confirm()
-	
-	if confirmation:
-		# if user confirms, set specified students to "absent"
-		mark_absent(absent_list)
-	elif not(confirmation):
-		# if user does not confirm, ask again
-		take_attendance()
-
-# marks all students in a given list as "absent"
 def mark_absent(abs_list):
+	"""Mark all students in a given list as \"absent\"."""
 	if abs_list:
 		for kid in abs_list:
 			if roster.get(kid):
@@ -160,10 +119,10 @@ def mark_absent(abs_list):
 					#for unrecognized student names)
 				take_attendance()
 
-# prints names of the students who are absent
-	# (because this is called when the roster is first loaded, it assumes it is displaying those 
-	# students who were absent last time user ran the program)
 def last_absent():
+	"""Print names of the students who are absent.
+	(Because this is called when the roster is first loaded, it assumes it is displaying those 
+	students who were absent last time user ran the program.)"""
 	absent_list = []
 
 	# iterate through roster, add absent students to absent_list
@@ -181,13 +140,14 @@ def last_absent():
 
 ### CHOOSING ###
 
-# pick a student from roster according to probability distrib., return that student
 def pick_kid():
-	value = random() * 100
+	"""Return a student picked from roster according to probability distribution."""
+	value = random() * 100 # random value between 0 and 100
 	startpoint = 0
 	endpoint = 0
 	
 	for kid in get_present_students():
+		# increase endpoint by this student's probability
 		endpoint += get_present_students()[kid].prob
 		
 		# for debug:
@@ -196,12 +156,13 @@ def pick_kid():
 			chosen = kid
 			break
 		else:
+			# increase startpoint by this student's probability
 			startpoint += get_present_students()[kid].prob
 
 	return chosen
 
-# adjust all students' probabilities, scale to sum to 100
 def scale():
+	"""Adjust all students' probabilities, scale to sum to 100."""
 	# set all prob's back to scale to 100
 	for kid in roster:
 		roster[kid].prob = 100 * prob_change ** (roster[kid].picked)
@@ -214,77 +175,58 @@ def scale():
 	for kid in get_present_students():
 			get_present_students()[kid].prob *= 100.0 / total
 
-# the entire student selection process, including confirmation and output
-def select():	
-	while True:
-		# pick a student
-		the_student = pick_kid()
-
-		# ask for confirmation
-		confirmation = confirm(the_student + " was selected. OK? y/n")
-
-		if confirmation: # if the user confirms
-			get_present_students()[the_student].picked += 1 # adjust student's "picked" counter
-			break
-		elif not(confirmation): # if user does not confirm
-			print "OK, choosing again." # run the loop again (i.e. pick again)
-
-	# scale the roster
-	scale()
-
-	# print and return
-	print "Selected:", the_student
-	return the_student
-
 ### ROSTERS (MAKING AND UPDATING) ###
 
-# returns a list of students according to user input
 def new_student_list():
-		# ask user to input students' names
-		print "Input students one at a time, hitting RETURN after each. For example:"
-		print "\tAbraham \n\tBeelzebub \n\tCain"
-		print "Remember, you must input your students' names exactly as the appear on the roster."
-		print "When you're done, just press 'RETURN'"
+	"""Return a list of students according to user input."""
+	
+	# ask user to input students' names
+	print "Input students one at a time, hitting RETURN after each. For example:"
+	print "\tAbraham \n\tBeelzebub \n\tCain"
+	print "Remember, you must input your students' names exactly as the appear on the roster."
+	print "When you're done, just press 'RETURN'"
 
-		temp_students_list = []
+	temp_students_list = []
 
-		while True:	
-			answer = ask()
-			if answer != "": # if answer is not a blank line
-				temp_students_list.append(answer) # append answer to list
-			else: # if the user enters a blank line, end the loop
-				break
+	while True:	
+		answer = ask()
+		if answer != "": # if answer is not a blank line
+			temp_students_list.append(answer) # append answer to list
+		else: # if the user enters a blank line, end the loop
+			break
 
-		# remore duplicates and alphebetize list
-		temp_students_list = list(set(temp_students_list))
-		temp_students_list.sort(key=string.lower)
+	# remore duplicates and alphebetize list
+	temp_students_list = list(set(temp_students_list))
+	temp_students_list.sort(key=string.lower)
 
-		# show the user-entered list, ask for confirmation
-		print "You provided the following list of students:"
-		student_string = "; ".join(temp_students_list)
-		print "\t", student_string
+	# show the user-entered list, ask for confirmation
+	print "You provided the following list of students:"
+	student_string = "; ".join(temp_students_list)
+	print "\t", student_string
 
-		# ask for confirmation
-		confirmation = confirm()
-		
-		if confirmation: # if user confirms
-			return temp_students_list # return the list
-		elif not(confirmation): # if user does not confirm
-			return new_student_list() # ask again for input
+	# ask for confirmation
+	confirmation = confirm()
+	
+	if confirmation: # if user confirms
+		return temp_students_list # return the list
+	elif not(confirmation): # if user does not confirm
+		return new_student_list() # ask again for input
 
-# given a list of students, add those students to the roster
-	# (can also be used to populate a roster for the first time)
 def update_roster(input_list):
-	# populate the roster with the contents of the list of students
+	"""Given a list of students, add those students to the roster.
+	(Can also be used to populate a roster for the first time)"""
+
 	for kid in input_list:
 		if roster.get(kid):
 			# if student is already in the roster, don't add a duplicate, print an error instead
 			print "ERROR: '%s' is already in your roster." % kid
 		else:
+			# create a new Student object in the roster
 			roster[kid] = Student(kid)
 
-# populate roster with the data in a given file
 def populate_roster(data_file):
+	"""Populate roster with the data in a given file."""
+
 	# first, clear the roster
 	roster.clear()
 
@@ -302,7 +244,7 @@ def populate_roster(data_file):
 		# make a new Student in the roster with the retrieved values
 		roster[name] = Student(name, prob, picked, absent)
 
-		# for debug
+		# for debug:
 		# print "name = %r; prob = %r; picked = %r; absent = %r" % (name, prob, picked, absent)
 
 	# close file
@@ -311,9 +253,72 @@ def populate_roster(data_file):
 	# repopulate and alphabetize student list
 	update_student_list()
 
-# makes a new roster (names the roster; asks for list of students; populates roster)
-def make_new_roster():
+### DATA ###
+
+def save_data():
+	"""Save any data from the session into the corresponding text file."""
+	# open the file associated with this roster
+	roster_info = open(current_file, "w")
+
+	# for every kid in roster, write their data to file
+	for kid in roster:
+		roster_info.write(roster[kid].to_file())
+		roster_info.write("\n")
+	roster_info.close()
+
+	# if this is a newly created roster, add the file name to the list of
+		# roster files in the "config" file
+	global new_roster
+
+	if new_roster:
+		roster_list = get_all_rosters() # list of all roster files
+		roster_list.append(current_file) # add current file to list
+		roster_list.sort(key=string.lower) # alphabetize list
+		all_rosters_file = open(config_file, "w") # open "config" file
+
+		# write list of all roster files to the document
+		for file_name in roster_list:
+			all_rosters_file.write(file_name)
+			all_rosters_file.write("\n")
+
+ 		# close file
+		all_rosters_file.close()
+
+##### MACRO FUNCTIONS #####
+
+def new_or_load():
+	"""Ask the user if they want to make a new roster of load an existing one."""
 	
+	# clear roster and student list
+	roster.clear()
+	del students[:]
+
+	while True:
+		# ask for user input
+		print "1. make new roster, 2. load existing roster"
+		answer = ask()
+
+		if answer == "1":
+			# make a new roster
+			return make_new_roster()
+
+		elif answer == "2":
+			# set "current roster" equal to roster loaded by user
+			global current_roster_name
+			current_roster_name = load_roster()
+
+			# print list of students absent last time user accessed this roster
+			last_absent()
+
+			# returns name of the class (= name of the file) for display
+			return current_roster_name
+
+		else: # if user input invalid, run loop again
+			print "Sorry, I didn't get that. Try again."
+
+def make_new_roster():
+	"""Makes a new roster (names the roster; asks for list of students; populates roster)."""
+
 	# name the text file in which this roster will be stored
 	while True:
 		print "Enter a name for this class."
@@ -343,9 +348,9 @@ def make_new_roster():
 			# returns name of the class (= name of the file) for display
 			return class_title
 
-# load a roster from file
 def load_roster():
-
+	"""Load a roster from file."""
+	
 	# Boolean saying that this is NOT a new roster
 		# i.e. when the program saves data, it will NOT edit the "config" file
 	global new_roster
@@ -394,66 +399,69 @@ def load_roster():
 			else: # if user input isn't in range or isn't an integer
 				print "Sorry, I didn't get that. Try again." # run the loop again
 
-### DATA ###
-
-# saves any data from the session into a text file
-def save_data():
-	# open the file associated with this roster
-	roster_info = open(current_file, "w")
-
-	# for every kid in roster, write their data to file
-	for kid in roster:
-		roster_info.write(roster[kid].to_file())
-		roster_info.write("\n")
-	roster_info.close()
-
-	# if this is a newly created roster, add the file name to the list of
-		# roster files in the "config" file
-	global new_roster
-
-	if new_roster:
-		roster_list = get_all_rosters() # list of all roster files
-		roster_list.append(current_file) # add current file to list
-		roster_list.sort(key=string.lower) # alphabetize list
-		all_rosters_file = open(config_file, "w") # open "config" file
-
-		# write list of all roster files to the document
-		for file_name in roster_list:
-			all_rosters_file.write(file_name)
-			all_rosters_file.write("\n")
-
- 		# close file
-		all_rosters_file.close()
-
-# the start screen: asks the user if they want to make a new roster of load an existing one
-def new_or_load():
-	
-	# clear roster and student list
-	roster.clear()
-	del students[:]
-
+def select():	
+	"""The entire student selection process, including confirmation and output."""
 	while True:
-		# ask for user input
-		print "1. make new roster, 2. load existing roster"
+		# pick a student
+		the_student = pick_kid()
+
+		# ask for confirmation
+		confirmation = confirm(the_student + " was selected. OK? y/n")
+
+		if confirmation: # if the user confirms
+			get_present_students()[the_student].picked += 1 # adjust student's "picked" counter
+			break
+		elif not(confirmation): # if user does not confirm
+			print "OK, choosing again." # run the loop again (i.e. pick again)
+
+	# scale the roster
+	scale()
+
+	# print and return
+	print "Selected:", the_student
+	return the_student
+
+def take_attendance():
+	"""Asks user to input absent students, passes these students to mark_absent()
+	to change their status to "absent"""
+	# reset all students to "present"
+	for kid in roster:
+		roster[kid].absent = False
+
+	# ask user to input absent students
+	print "Input absent students one at a time, hitting RETURN after each. For example:"
+	print "\tAbraham \n\tBeelzebub \n\tCain"
+	print "Remember, you must input your students' names exactly as the appear on the roster."
+	print "As a reminder, your roster is:"
+	for kid in students:
+		print "\t", kid
+	print "When you're done (or if no one is absent), just press 'RETURN'"
+
+	absent_list = []
+
+	while True:	
 		answer = ask()
+		if answer != "": # if answer is not a blank line
+			if roster.get(answer): # if answer is in the roster (i.e. valid student name)
+				absent_list.append(answer) # add to absent list
+			else:
+				print "Not a vaild student name, please try again."
+		else: # if the user enters a blank line, end the loop
+			break
 
-		if answer == "1":
-			# make a new roster
-			return make_new_roster()
+	# show the user-entered list, ask for confirmation
+	print "You said the following students are absent:"
+	absent_string = "; ".join(absent_list)
+	print "\t", absent_string
 
-		elif answer == "2":
-			# set "current roster" equal to roster loaded by user
-			global current_roster_name
-			current_roster_name = load_roster()
-
-			# print list of students absent last time user accessed this roster
-			last_absent()
-
-			# returns name of the class (= name of the file) for display
-			return current_roster_name
-
-		else: # if user input invalid, run loop again
-			print "Sorry, I didn't get that. Try again."
+	confirmation = confirm()
+	
+	if confirmation:
+		# if user confirms, set specified students to "absent"
+		mark_absent(absent_list)
+	elif not(confirmation):
+		# if user does not confirm, ask again
+		take_attendance()
 
 ### TROUBLESHOOTING/TESTING FUNCTIONS ###
 def test_always(kid):
@@ -478,8 +486,8 @@ def multi_test(x):
 		#print roster
 		#print "-----------"
 
-# a version of the select function that doesn't ask for confirmation
 def debug_select():	
+	"""A version of the select function that doesn't ask for confirmation."""
 	# pick a student
 	the_student = pick_kid()
 
@@ -492,40 +500,41 @@ def debug_select():
 	return the_student
 
 ### ACTION STARTS HERE ###
-print "Hello, and welcome to the Student Picker 5000!"
+if __name__ == '__main__':
+	print "Hello, and welcome to the Student Picker 5000!"
 
-# ask for user input: new roster, or import from file?
-current_roster_name = new_or_load()
+	# ask for user input: new roster, or import from file?
+	current_roster_name = new_or_load()
 
-# scale the probabilities of the present students
-update_student_list()
+	# scale the probabilities of the present students
+	update_student_list()
 
-answer = confirm("Take attendance now? y/n")
-if answer:
-	print "Who is absent today?"
-	take_attendance()
-	scale()
-
-# ask for user input
-while True:
-	print "1. pick, 2. input absences, 3. view roster, 4. add student(s), 5. switch classes, 6. exit"
-	answer = ask()
-	if answer == "1":
-		select()
-	elif answer == "2":
+	answer = confirm("Take attendance now? y/n")
+	if answer:
+		print "Who is absent today?"
 		take_attendance()
 		scale()
-	elif answer == "3":
-		display_roster()
-	elif answer == "4":
-		new_students = new_student_list()
-		update_roster(new_students)
-		update_student_list()
-	elif answer == "5":
-		save_data()
-		new_or_load()
-	elif answer == "6":	
-		save_data()
-		exit()
-	else:
-		print "Sorry, I didn't get that. Try again."
+
+	# ask for user input
+	while True:
+		print "1. pick, 2. input absences, 3. view roster, 4. add student(s), 5. switch classes, 6. exit"
+		answer = ask()
+		if answer == "1":
+			select()
+		elif answer == "2":
+			take_attendance()
+			scale()
+		elif answer == "3":
+			display_roster()
+		elif answer == "4":
+			new_students = new_student_list()
+			update_roster(new_students)
+			update_student_list()
+		elif answer == "5":
+			save_data()
+			new_or_load()
+		elif answer == "6":	
+			save_data()
+			exit()
+		else:
+			print "Sorry, I didn't get that. Try again."
