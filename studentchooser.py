@@ -208,6 +208,7 @@ def scale():
 
 	# for all kids who are present, adjust prob. by # of times picked, then scale
 	total = 0
+
 	for kid in get_present_students():
 			total += get_present_students()[kid].prob
 	for kid in get_present_students():
@@ -456,15 +457,16 @@ def new_or_load():
 
 ### TROUBLESHOOTING/TESTING FUNCTIONS ###
 def test_always(kid):
-	for i in range(0,10000):
-		the_student = select()
-		if the_student == kid:
+	for i in range(0,500):
+		the_student = debug_select()
+		print "%d: %s" % (i, the_student)
+		if the_student != kid:
 			print "PANIC!"
 			break
 
 def test_never(kid):
-	for i in range(0,10000):
-		the_student = select()
+	for i in range(0,500):
+		the_student = debug_select()
 		print "%d: %s" % (i, the_student)
 		if the_student == kid:
 			print "PANIC!"
@@ -472,9 +474,22 @@ def test_never(kid):
 
 def multi_test(x):
 	for i in range(0,x):
-		print "%d: %s" % (i, select())
+		print "%d: %s" % (i, debug_select())
 		#print roster
 		#print "-----------"
+
+# a version of the select function that doesn't ask for confirmation
+def debug_select():	
+	# pick a student
+	the_student = pick_kid()
+
+	get_present_students()[the_student].picked += 1 # adjust student's "picked" counter
+
+	# scale the roster
+	scale()
+
+	# return
+	return the_student
 
 ### ACTION STARTS HERE ###
 print "Hello, and welcome to the Student Picker 5000!"
