@@ -278,8 +278,6 @@ def save_data():
          # close file
         all_rosters_file.close()
 
-##### MACRO FUNCTIONS #####
-
 def new_or_load():
     """Ask the user if they want to make a new roster of load an existing one."""
 
