@@ -109,7 +109,7 @@ def mark_absent(abs_list):
             print "ERROR! One or more of your names was not recognized. Please try again.\n"
             # (note: this is a failsafe. Theoretically, take_attendance() controls
                 #for unrecognized student names)
-            take_attendance()
+            _take_attendance() # should this also scale?
 
 def last_absent():
     """Print names of the students who are absent.
@@ -414,6 +414,10 @@ def select():
     return the_student
 
 def take_attendance():
+    _take_attendance()
+    scale()
+
+def _take_attendance():
     """Asks user to input absent students, passes these students to mark_absent()
     to change their status to "absent"""
     # reset all students to "present"
@@ -453,7 +457,7 @@ def take_attendance():
         mark_absent(absent_list)
     elif not(confirmation):
         # if user does not confirm, ask again
-        take_attendance()
+        _take_attendance()
 
 ### TROUBLESHOOTING/TESTING FUNCTIONS ###
 def test_always(kid):
@@ -505,7 +509,6 @@ if __name__ == '__main__':
     if answer:
         print "Who is absent today?"
         take_attendance()
-        scale()
 
     # ask for user input
     while True:
@@ -515,7 +518,6 @@ if __name__ == '__main__':
             select()
         elif answer == "2":
             take_attendance()
-            scale()
         elif answer == "3":
             display_roster()
         elif answer == "4":
