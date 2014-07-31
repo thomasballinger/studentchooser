@@ -98,8 +98,6 @@ def get_all_rosters():
     all_rosters_file.close()
     return all_rosters_list
 
-###### FUNCTIONAL FUNCTIONS ######
-
 ### ATTENDANCE ###
 
 def mark_absent(abs_list):
