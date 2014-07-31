@@ -1,6 +1,7 @@
 from random import random
-from sys import exit
+import sys
 import string
+
 
 ### CONSTANTS & GLOBALS ###
 
@@ -495,6 +496,19 @@ def debug_select():
     # return
     return the_student
 
+def add_students():
+    new_students = new_student_list()
+    update_roster(new_students)
+    update_student_list()
+
+def switch_classes():
+    save_data()
+    new_or_load()
+
+def exit():
+    save_data()
+    sys.exit()
+
 ### ACTION STARTS HERE ###
 if __name__ == '__main__':
     print "Hello, and welcome to the Student Picker 5000!"
@@ -521,14 +535,10 @@ if __name__ == '__main__':
         elif answer == "3":
             display_roster()
         elif answer == "4":
-            new_students = new_student_list()
-            update_roster(new_students)
-            update_student_list()
+            add_students()
         elif answer == "5":
-            save_data()
-            new_or_load()
+            switch_classes()
         elif answer == "6":
             save_data()
-            exit()
         else:
             print "Sorry, I didn't get that. Try again."
