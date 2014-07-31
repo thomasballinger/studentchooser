@@ -102,15 +102,14 @@ def get_all_rosters():
 
 def mark_absent(abs_list):
     """Mark all students in a given list as \"absent\"."""
-    if abs_list:
-        for kid in abs_list:
-            if roster.get(kid):
-                roster[kid].absent = True
-            else:
-                print "ERROR! One or more of your names was not recognized. Please try again.\n"
-                # (note: this is a failsafe. Theoretically, take_attendance() controls
-                    #for unrecognized student names)
-                take_attendance()
+    for kid in abs_list:
+        if roster.get(kid):
+            roster[kid].absent = True
+        else:
+            print "ERROR! One or more of your names was not recognized. Please try again.\n"
+            # (note: this is a failsafe. Theoretically, take_attendance() controls
+                #for unrecognized student names)
+            take_attendance()
 
 def last_absent():
     """Print names of the students who are absent.
