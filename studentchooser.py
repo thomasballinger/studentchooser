@@ -25,7 +25,7 @@ class Student(object):
     def __init__(self, name, prob=1, picked=0, absent=False):
         self.name = name
         self.prob = prob
-        self.picked = picked
+        self.picked = picked # is this whether picked or not, or how many times picked?
         self.absent = absent
     def __repr__(self):
         # for debug
@@ -115,15 +115,9 @@ def last_absent():
     """Print names of the students who are absent.
     (Because this is called when the roster is first loaded, it assumes it is displaying those
     students who were absent last time user ran the program.)"""
-    absent_list = []
 
-    # iterate through roster, add absent students to absent_list
-    for kid in roster:
-        if roster[kid].absent:
-            absent_list.append(kid)
+    absent_list = sorted([kid for kid in roster if roster[kid].absent], key=string.lower)
 
-    # sort list, make into string
-    absent_list.sort(key=string.lower)
     absent_string = "; ".join(absent_list)
 
     # print results
@@ -134,6 +128,8 @@ def last_absent():
 
 def pick_kid():
     """Return a student picked from roster according to probability distribution."""
+    # I think you should mention that this is psuedo-random - ie events are not independent!
+    # since you adjust the probability based on whether they've been picked or not
     value = random() * 100 # random value between 0 and 100
     startpoint = 0
     endpoint = 0
@@ -158,6 +154,9 @@ def scale():
     # set all prob's back to scale to 100
     for kid in roster:
         roster[kid].prob = 100 * prob_change ** (roster[kid].picked)
+        # I see how this works, but only after thinking really hard -> I don't like it
+        # Also I'm unclear on whther picked can be values other than 1 or 0, since
+        # this logic would work, but be interesting behavior
 
     # for all kids who are present, adjust prob. by # of times picked, then scale
     total = 0
