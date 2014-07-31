@@ -65,12 +65,7 @@ def confirm(msg=default_confirm_msg):
 
 def get_present_students():
 	"""Return a list of present students."""
-	present_kids = {}
-	for kid in roster:
-		if not(roster[kid].absent):
-			present_kids[kid] = roster[kid]
-	return present_kids
-
+	return {kid: roster[kid] for kid in roster if not roster[kid].absent}
 
 def update_student_list():
 	"""Repopulate and alphabetize student list."""
