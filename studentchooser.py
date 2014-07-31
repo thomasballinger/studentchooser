@@ -215,6 +215,19 @@ def update_roster(input_list):
             # create a new Student object in the roster
             roster[kid] = Student(kid)
 
+def student_from_line(line):
+    this_line = line.split("; ") # make each line into list
+
+    name = this_line[0]
+    prob = float(this_line[1])
+    picked = int(this_line[2])
+    absent = bool(int(this_line[3]))
+
+    # for debug:
+    # print "name = %r; prob = %r; picked = %r; absent = %r" % (name, prob, picked, absent)
+
+    return Student(name, prob, picked, absent)
+
 def populate_roster(data_file):
     """Populate roster with the data in a given file."""
 
@@ -225,18 +238,8 @@ def populate_roster(data_file):
     roster_info = open(data_file)
 
     for line in roster_info:
-        this_line = line.split("; ") # make each line into list
-
-        name = this_line[0]
-        prob = float(this_line[1])
-        picked = int(this_line[2])
-        absent = bool(int(this_line[3]))
-
-        # make a new Student in the roster with the retrieved values
-        roster[name] = Student(name, prob, picked, absent)
-
-        # for debug:
-        # print "name = %r; prob = %r; picked = %r; absent = %r" % (name, prob, picked, absent)
+        s = student_from_line(line)
+        roster[s.name] = s
 
     # close file
     roster_info.close()
