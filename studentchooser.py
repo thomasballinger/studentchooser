@@ -90,7 +90,7 @@ def get_pretty_name(filename):
 
 def get_all_rosters():
     """"Return a list of all of the roster filenames in the config file."""
-    all_rosters_file = open(config_file)    
+    all_rosters_file = open(config_file)
     all_rosters_list = []
     for line in all_rosters_file:
         all_rosters_list.append(line.strip())
@@ -116,7 +116,7 @@ def mark_absent(abs_list):
 
 def last_absent():
     """Print names of the students who are absent.
-    (Because this is called when the roster is first loaded, it assumes it is displaying those 
+    (Because this is called when the roster is first loaded, it assumes it is displaying those
     students who were absent last time user ran the program.)"""
     absent_list = []
 
@@ -124,7 +124,7 @@ def last_absent():
     for kid in roster:
         if roster[kid].absent:
             absent_list.append(kid)
-            
+
     # sort list, make into string
     absent_list.sort(key=string.lower)
     absent_string = "; ".join(absent_list)
@@ -140,11 +140,11 @@ def pick_kid():
     value = random() * 100 # random value between 0 and 100
     startpoint = 0
     endpoint = 0
-    
+
     for kid in get_present_students():
         # increase endpoint by this student's probability
         endpoint += get_present_students()[kid].prob
-        
+
         # for debug:
         # print "(%f, %f)" % (startpoint, endpoint)
         if (startpoint <= value <= endpoint):
@@ -174,7 +174,7 @@ def scale():
 
 def new_student_list():
     """Return a list of students according to user input."""
-    
+
     # ask user to input students' names
     print "Input students one at a time, hitting RETURN after each. For example:"
     print "\tAbraham \n\tBeelzebub \n\tCain"
@@ -183,7 +183,7 @@ def new_student_list():
 
     temp_students_list = []
 
-    while True:    
+    while True:
         answer = ask()
         if answer != "": # if answer is not a blank line
             temp_students_list.append(answer) # append answer to list
@@ -201,7 +201,7 @@ def new_student_list():
 
     # ask for confirmation
     confirmation = confirm()
-    
+
     if confirmation: # if user confirms
         return temp_students_list # return the list
     elif not(confirmation): # if user does not confirm
@@ -283,7 +283,7 @@ def save_data():
 
 def new_or_load():
     """Ask the user if they want to make a new roster of load an existing one."""
-    
+
     # clear roster and student list
     roster.clear()
     del students[:]
@@ -319,7 +319,7 @@ def make_new_roster():
         print "Enter a name for this class."
         class_title = ask()
         filename = class_title + ".txt"
-        
+
         # checks if the given filename already exists in config file
         all_rosters_list = get_all_rosters()
         if filename in all_rosters_list:
@@ -345,22 +345,22 @@ def make_new_roster():
 
 def load_roster():
     """Load a roster from file."""
-    
+
     # Boolean saying that this is NOT a new roster
         # i.e. when the program saves data, it will NOT edit the "config" file
     global new_roster
     new_roster = False
-    
+
     # make list of all rosters in config file
     roster_list = get_all_rosters()
 
     if len(roster_list) == 0: # if list is empty, make a new roster instead
         print "No rosters available to load. Make a new one instead."
         make_new_roster()
-    
+
     else: # if config file contains at least one roster to load...
         print "Which roster would you like to load? Enter a number."
-        
+
         # print a list of available rosters from config file
         for item in roster_list:
             item_index = roster_list.index(item) + 1
@@ -380,12 +380,12 @@ def load_roster():
             # if the answer is an int. in the range of # items in the list...    
             if answer_int in range(1, len(roster_list) + 1):
                 index = answer_int - 1 # (b/c list as displayed is 1-indexed)
-                
+
                 # save the given filename as the 'current file'
                 global current_file
                 current_file = roster_list[index]
                 print "File to load:", current_file
-                
+
                 # populate the roster using the data in the selected file
                 populate_roster(current_file)
 
@@ -394,7 +394,7 @@ def load_roster():
             else: # if user input isn't in range or isn't an integer
                 print "Sorry, I didn't get that. Try again." # run the loop again
 
-def select():    
+def select():
     """The entire student selection process, including confirmation and output."""
     while True:
         # pick a student
@@ -434,7 +434,7 @@ def take_attendance():
 
     absent_list = []
 
-    while True:    
+    while True:
         answer = ask()
         if answer != "": # if answer is not a blank line
             if roster.get(answer): # if answer is in the roster (i.e. valid student name)
@@ -450,7 +450,7 @@ def take_attendance():
     print "\t", absent_string
 
     confirmation = confirm()
-    
+
     if confirmation:
         # if user confirms, set specified students to "absent"
         mark_absent(absent_list)
@@ -481,7 +481,7 @@ def multi_test(x):
         #print roster
         #print "-----------"
 
-def debug_select():    
+def debug_select():
     """A version of the select function that doesn't ask for confirmation."""
     # pick a student
     the_student = pick_kid()
@@ -528,7 +528,7 @@ if __name__ == '__main__':
         elif answer == "5":
             save_data()
             new_or_load()
-        elif answer == "6":    
+        elif answer == "6":
             save_data()
             exit()
         else:
