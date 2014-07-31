@@ -54,9 +54,9 @@ def confirm(msg=default_confirm_msg):
 	while True:
 		print msg
 		answer = ask()
-		if answer == "y" or answer == "Y" or answer == "yes" or answer == "Yes" or answer == "YES":
+		if answer.lower() in ["y", "yes"]:
 			return True
-		elif answer == "n" or answer == "N" or answer == "no" or answer == "No" or answer == "NO":
+		elif answer.lower() in ["n", "no"]:
 			return False
 		else:
 			print "Sorry, I didn't get that. Try again."
